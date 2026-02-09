@@ -88,8 +88,6 @@ curl -X DELETE http://localhost:5000/api/orders/ORD001
 
 ## Reflection
 
-- **Design Decision — Separation of Concerns:** I separated storage (`InMemoryStorage`), business logic (`OrderTracker`), and the API layer (`app.py`) into distinct modules. This makes it straightforward to swap the in-memory backend for a real database (e.g., PostgreSQL) without touching the API routes or validation logic. The trade-off is a few more files, but the modularity pays off in testability and maintainability.
-
-- **Testing Insight — TDD Caught Validation Gaps:** Writing unit tests before the implementation revealed that early drafts of `add_order` silently accepted zero or negative quantities. A failing test for `quantity=0` prompted adding explicit validation, which the integration tests then confirmed end-to-end. This reinforced the value of the test-first workflow.
-
-- **Next Step — Persistent Storage:** The most impactful improvement would be replacing `InMemoryStorage` with a database-backed implementation (e.g., SQLAlchemy + PostgreSQL). The current architecture already isolates storage behind an interface, so this change would be minimal. Adding status-transition validation (e.g., preventing `delivered → pending`) would also strengthen data integrity.
+- **Design trade-off:** I split the project into three layers — storage, business logic, and API — so each can change independently. The trade-off is more files, but it makes swapping in a real database later a one-file change instead of a rewrite.
+- **Testing insight:** A unit test for `quantity=0` exposed that my initial `add_order` silently accepted invalid quantities. That failing test drove me to add explicit validation before any order is stored, which the integration tests then confirmed end-to-end.
+- **Next-step improvement:** I would replace `InMemoryStorage` with a database-backed implementation (e.g., SQLAlchemy + PostgreSQL) and add status-transition rules to prevent illogical changes like moving from `delivered` back to `pending`.
